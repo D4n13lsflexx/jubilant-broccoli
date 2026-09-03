@@ -46,6 +46,16 @@ def mostrar_info_red():
     for nombre, ips in info["interfaces"].items():
         print(f"  {nombre}: {', '.join(ips)}")
 
+    print("\nServicios locales (escuchando):")
+    if info["servicios"]:
+        for servicio in info["servicios"]:
+            print(
+                f"  Puerto {servicio['puerto']} ({servicio['direccion']}) "
+                f"-> {servicio['proceso']} (PID {servicio['pid']})"
+            )
+    else:
+        print("  Ninguno detectado o sin permisos suficientes.")
+
 
 def main():
     print("=" * 40)

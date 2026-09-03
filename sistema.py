@@ -87,6 +87,39 @@ def obtener_dns() -> list[str]:
         return [f"Error: {exc}"]
 
 
+def obtener_servicios_locales() -> list[dict]:
+    """Devuelve los servicios que escuchan conexiones localmente."""
+    servicios = []
+    try:
+        conexiones = psutil.net_connections(kind="inet")
+    except psutil.AccessDenied:
+        return servicios
+
+    for conexion in conexiones:
+        if conexion.status != "LISTEN" or not conexion.laddr:
+            continue
+
+        nombre_proceso = "Desconocido"
+        if conexion.pid:
+            try:
+                nombre_proceso = psutil.Process(conexion.pid).name()
+            except psutil.NoSuchProcess:
+                nombre_proceso = "Sin acceso"
+            except psutil.AccessDenied:
+                nombre_proceso = "Sin acceso"
+
+        servicios.append(
+            {
+                "puerto": conexion.laddr.port,
+                "direccion": conexion.laddr.ip,
+                "proceso": nombre_proceso,
+                "pid": conexion.pid,
+            }
+        )
+
+    return sorted(servicios, key=lambda servicio: servicio["puerto"])
+
+
 def recopilar_info_basica() -> dict:
     """Combina la información básica del equipo."""
     info = obtener_so()
@@ -95,4 +128,5 @@ def recopilar_info_basica() -> dict:
     info["interfaces"] = obtener_interfaces()
     info["gateway"] = obtener_gateway()
     info["dns"] = obtener_dns()
+    info["servicios"] = obtener_servicios_locales()
     return info
