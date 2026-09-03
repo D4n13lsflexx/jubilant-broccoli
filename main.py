@@ -39,6 +39,8 @@ def mostrar_info_red():
     print(f"Arquitectura: {info['arquitectura']}")
     print(f"Hostname: {info['hostname']}")
     print(f"IP local: {info['ip_local']}")
+    print(f"Gateway: {info['gateway']}")
+    print(f"DNS: {', '.join(info['dns'])}")
 
     print("\nInterfaces de red:")
     for nombre, ips in info["interfaces"].items():
