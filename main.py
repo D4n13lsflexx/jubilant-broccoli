@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from analizador import detectar_nivel, leer_log
+from security_analyzer import analizar_servicios, resumen_exposicion
 from sistema import recopilar_info_basica
 
 
@@ -58,6 +59,26 @@ def mostrar_info_red():
                 )
     else:
         print("  Ninguno detectado o sin permisos suficientes.")
+
+    servicios_analizados = analizar_servicios(info["servicios"])
+    resumen = resumen_exposicion(servicios_analizados)
+
+    print("\nAnálisis de exposición:")
+    for servicio in servicios_analizados:
+        if "error" in servicio:
+            continue
+        print(
+            f"  {servicio['proceso']} :{servicio['puerto']} "
+            f"-> {servicio['nivel_exposicion']}"
+        )
+        print(f"    {servicio['motivo']}")
+
+    print(
+        f"\nResumen: {resumen['BAJA']} baja, "
+        f"{resumen['REVISAR']} revisar, "
+        f"{resumen['ALTA EXPOSICIÓN']} alta exposición "
+        f"(total: {resumen['total']})"
+    )
 
 
 def main():
