@@ -1,0 +1,8 @@
+2026-09-01 10:00:00 INFO Iniciando aplicación
+2026-09-01 10:00:02 INFO Conectando a base de datos
+2026-09-01 10:00:05 WARNING No se recibió respuesta del servicio
+2026-09-01 10:00:10 ERROR Falló la conexión al servidor
+2026-09-01 10:00:12 INFO Reintento exitoso
+2026-09-01 10:00:14 DEBUG Información adicional de depuración
+2026-09-01 10:00:15 CRITICAL Error crítico en el sistema
+2026-09-01 10:00:16 INFO Proceso finalizado
