@@ -28,13 +28,21 @@ def mostrar_analisis(ruta, lineas):
             print(f"- {nivel}: {niveles[nivel]}")
 
 
-def mostrar_info_sistema():
-    print("\n" + "=" * 40)
-    print("  SENTINEL - Información del sistema")
-    print("=" * 40)
+def mostrar_info_red():
+    info = recopilar_info_basica()
 
-    for nombre, valor in recopilar_info_basica().items():
-        print(f"{nombre.capitalize()}: {valor}")
+    print("\n" + "=" * 40)
+    print("  SENTINEL - Información del Sistema")
+    print("=" * 40)
+    print(f"Sistema operativo: {info['sistema']}")
+    print(f"Versión: {info['version']}")
+    print(f"Arquitectura: {info['arquitectura']}")
+    print(f"Hostname: {info['hostname']}")
+    print(f"IP local: {info['ip_local']}")
+
+    print("\nInterfaces de red:")
+    for nombre, ips in info["interfaces"].items():
+        print(f"  {nombre}: {', '.join(ips)}")
 
 
 def main():
@@ -56,7 +64,7 @@ def main():
                 print(f"No se pudo analizar el archivo: {exc}")
         elif opcion == "2":
             try:
-                mostrar_info_sistema()
+                mostrar_info_red()
             except OSError as exc:
                 print(f"No se pudo obtener la información del sistema: {exc}")
         elif opcion == "3":
