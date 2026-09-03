@@ -2,7 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from analizador import detectar_nivel, leer_log
-from security_analyzer import analizar_servicios, resumen_exposicion
+from security_analyzer import generar_hallazgos
 from sistema import recopilar_info_basica
 
 
@@ -60,28 +60,14 @@ def mostrar_info_red():
     else:
         print("  Ninguno detectado o sin permisos suficientes.")
 
-    servicios_analizados = analizar_servicios(info["servicios"])
-    resumen = resumen_exposicion(servicios_analizados)
-
-    print("\nAnálisis de exposición:")
-    for servicio in servicios_analizados:
-        if "error" in servicio:
-            continue
-        print(
-            f"  {servicio['proceso']} :{servicio['puerto']} "
-            f"-> {servicio['nivel_exposicion']}"
-        )
-        print(f"    Descripción: {servicio['descripcion']}")
-        print(f"    Conocido: {'Sí' if servicio['conocido'] else 'No'}")
-        print(f"    {servicio['motivo']}")
-        print(f"    Recomendación: {servicio['recomendacion']}")
-
-    print(
-        f"\nResumen: {resumen['BAJA']} baja, "
-        f"{resumen['REVISAR']} revisar, "
-        f"{resumen['ALTA EXPOSICIÓN']} alta exposición "
-        f"(total: {resumen['total']})"
-    )
+    print("\nHALLAZGOS\n")
+    hallazgos = generar_hallazgos(info["servicios"])
+    for hallazgo in hallazgos:
+        print(f"[{hallazgo['riesgo']}] {hallazgo['proceso']} :{hallazgo['puerto']}")
+        print(f"  Exposición: {hallazgo['exposicion']}")
+        estado = "conocido" if hallazgo["conocido"] else "no identificado"
+        print(f"  {hallazgo['descripcion']} ({estado})")
+        print(f"  {hallazgo['motivo']}\n")
 
 
 def main():

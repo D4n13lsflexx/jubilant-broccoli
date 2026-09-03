@@ -3,15 +3,26 @@ PROCESOS_CONOCIDOS = {
     "rapportd": "Continuity / Handoff (macOS)",
 }
 
+MATRIZ_RIESGO = {
+    ("BAJA", True): "BAJO",
+    ("BAJA", False): "REVISAR",
+    ("REVISAR", True): "REVISAR",
+    ("REVISAR", False): "ALTA PRIORIDAD",
+    ("ALTA EXPOSICIÓN", True): "REVISAR",
+    ("ALTA EXPOSICIÓN", False): "ALTA PRIORIDAD",
+}
 
-def identificar_proceso(proceso: str) -> tuple[bool, str]:
-    """Identifica si el proceso está en la base de procesos conocidos."""
-    descripcion = PROCESOS_CONOCIDOS.get(proceso)
 
-    if descripcion:
-        return True, descripcion
+def identificar_proceso(nombre_proceso: str) -> tuple[str, bool]:
+    """Devuelve (descripción, conocido) para un nombre de proceso."""
+    if nombre_proceso in PROCESOS_CONOCIDOS:
+        return PROCESOS_CONOCIDOS[nombre_proceso], True
+    return "Proceso no identificado", False
 
-    return False, "Proceso no identificado"
+
+def calcular_riesgo(nivel_exposicion: str, conocido: bool) -> str:
+    """Combina exposición e identificación como prioridad de revisión."""
+    return MATRIZ_RIESGO.get((nivel_exposicion, conocido), "REVISAR")
 
 
 def generar_recomendacion(nivel_exposicion: str, conocido: bool) -> str:
@@ -73,7 +84,7 @@ def analizar_servicios(servicios: list[dict]) -> list[dict]:
             continue
 
         nivel, motivo = clasificar_exposicion(servicio["direccion"])
-        conocido, descripcion = identificar_proceso(servicio["proceso"])
+        descripcion, conocido = identificar_proceso(servicio["proceso"])
         enriquecido = servicio.copy()
         enriquecido["nivel_exposicion"] = nivel
         enriquecido["motivo"] = motivo
@@ -83,6 +94,35 @@ def analizar_servicios(servicios: list[dict]) -> list[dict]:
         analizados.append(enriquecido)
 
     return analizados
+
+
+def generar_hallazgos(servicios: list[dict]) -> list[dict]:
+    """Convierte servicios en hallazgos estructurados."""
+    hallazgos = []
+
+    for servicio in servicios:
+        if "error" in servicio:
+            continue
+
+        nivel_exposicion, motivo = clasificar_exposicion(servicio["direccion"])
+        descripcion, conocido = identificar_proceso(servicio["proceso"])
+        riesgo = calcular_riesgo(nivel_exposicion, conocido)
+
+        hallazgos.append(
+            {
+                "tipo": "servicio_local",
+                "proceso": servicio["proceso"],
+                "pid": servicio["pid"],
+                "puerto": servicio["puerto"],
+                "exposicion": nivel_exposicion,
+                "descripcion": descripcion,
+                "conocido": conocido,
+                "motivo": motivo,
+                "riesgo": riesgo,
+            }
+        )
+
+    return hallazgos
 
 
 def resumen_exposicion(servicios_analizados: list[dict]) -> dict:
