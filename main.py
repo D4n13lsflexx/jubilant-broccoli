@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from analizador import detectar_nivel, leer_log
+from network_scanner import escanear_red
 from security_analyzer import generar_hallazgos
 from sistema import recopilar_info_basica
 
@@ -11,7 +12,8 @@ def mostrar_menu():
     print("1. Analizar logs")
     print("2. Analizar red")
     print("3. Generar reporte")
-    print("4. Salir")
+    print("4. Escanear LAN")
+    print("5. Salir")
 
 
 def mostrar_analisis(ruta, lineas):
@@ -95,6 +97,16 @@ def main():
         elif opcion == "3":
             print("Generando reporte...")
         elif opcion == "4":
+            print("\nEscaneando red local (puede tardar unos segundos)...")
+            try:
+                info_sistema = recopilar_info_basica()
+                dispositivos = escanear_red(info_sistema["ip_local"])
+                print(f"\nDispositivos activos encontrados: {len(dispositivos)}")
+                for dispositivo in dispositivos:
+                    print(f"  {dispositivo['ip']} -> {dispositivo['mac']}")
+            except (OSError, ValueError) as exc:
+                print(f"No se pudo escanear la red: {exc}")
+        elif opcion == "5":
             break
         else:
             print("Opción inválida")
