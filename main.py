@@ -37,7 +37,13 @@ def main():
         opcion = input("\nSelecciona una opción: ").strip()
 
         if opcion == "1":
-            print("Analizando logs...")
+            try:
+                ruta = Path(input("Ruta del archivo de log: ").strip())
+                lineas = leer_log(ruta)
+                if lineas is not None:
+                    mostrar_analisis(ruta, lineas)
+            except (OSError, ValueError) as exc:
+                print(f"No se pudo analizar el archivo: {exc}")
         elif opcion == "2":
             print("Analizando red...")
         elif opcion == "3":
