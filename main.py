@@ -2,6 +2,7 @@ from collections import Counter
 from pathlib import Path
 
 from analizador import detectar_nivel, leer_log
+from sistema import recopilar_info_basica
 
 
 def mostrar_menu():
@@ -27,6 +28,15 @@ def mostrar_analisis(ruta, lineas):
             print(f"- {nivel}: {niveles[nivel]}")
 
 
+def mostrar_info_sistema():
+    print("\n" + "=" * 40)
+    print("  SENTINEL - Información del sistema")
+    print("=" * 40)
+
+    for nombre, valor in recopilar_info_basica().items():
+        print(f"{nombre.capitalize()}: {valor}")
+
+
 def main():
     print("=" * 40)
     print("  SENTINEL - Analizador de Logs")
@@ -45,7 +55,10 @@ def main():
             except (OSError, ValueError) as exc:
                 print(f"No se pudo analizar el archivo: {exc}")
         elif opcion == "2":
-            print("Analizando red...")
+            try:
+                mostrar_info_sistema()
+            except OSError as exc:
+                print(f"No se pudo obtener la información del sistema: {exc}")
         elif opcion == "3":
             print("Generando reporte...")
         elif opcion == "4":
