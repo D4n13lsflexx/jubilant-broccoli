@@ -6,8 +6,10 @@ from analizador import detectar_nivel, leer_log
 
 def mostrar_menu():
     print("\n¿Qué quieres hacer?")
-    print("1. Analizar un archivo de log")
-    print("2. Salir")
+    print("1. Analizar logs")
+    print("2. Analizar red")
+    print("3. Generar reporte")
+    print("4. Salir")
 
 
 def mostrar_analisis(ruta, lineas):
@@ -35,15 +37,15 @@ def main():
         opcion = input("\nSelecciona una opción: ").strip()
 
         if opcion == "1":
-            ruta = Path(input("Ruta del archivo de log: ").strip())
-            lineas = leer_log(ruta)
-            if lineas is not None:
-                mostrar_analisis(ruta, lineas)
+            print("Analizando logs...")
         elif opcion == "2":
-            print("\nHasta luego.")
+            print("Analizando red...")
+        elif opcion == "3":
+            print("Generando reporte...")
+        elif opcion == "4":
             break
         else:
-            print("\nOpción no válida. Elige 1 o 2.")
+            print("Opción inválida")
 
 
 if __name__ == "__main__":
