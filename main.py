@@ -74,6 +74,7 @@ def mostrar_info_red():
         print(f"    Descripción: {servicio['descripcion']}")
         print(f"    Conocido: {'Sí' if servicio['conocido'] else 'No'}")
         print(f"    {servicio['motivo']}")
+        print(f"    Recomendación: {servicio['recomendacion']}")
 
     print(
         f"\nResumen: {resumen['BAJA']} baja, "

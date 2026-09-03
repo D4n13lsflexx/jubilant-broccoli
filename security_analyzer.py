@@ -14,6 +14,36 @@ def identificar_proceso(proceso: str) -> tuple[bool, str]:
     return False, "Proceso no identificado"
 
 
+def generar_recomendacion(nivel_exposicion: str, conocido: bool) -> str:
+    """Genera una recomendación según exposición e identificación."""
+    if nivel_exposicion == "BAJA":
+        if conocido:
+            return "Sin acción inmediata. El servicio está limitado a esta máquina."
+        return "Revisar el proceso si no reconoces qué aplicación lo inició."
+
+    if nivel_exposicion == "ALTA EXPOSICIÓN":
+        if conocido:
+            return (
+                "Verificar que este servicio necesite estar disponible "
+                "en todas las interfaces."
+            )
+        return (
+            "Revisar con prioridad: el proceso no está identificado "
+            "y escucha en todas las interfaces."
+        )
+
+    if conocido:
+        return (
+            "Verificar si este servicio debe estar disponible "
+            "en la dirección indicada."
+        )
+
+    return (
+        "Revisar el proceso y confirmar por qué está escuchando "
+        "en esta dirección."
+    )
+
+
 def clasificar_exposicion(direccion: str) -> tuple[str, str]:
     """Clasifica el nivel de exposición según la dirección de escucha."""
     if direccion in ("127.0.0.1", "::1"):
@@ -49,6 +79,7 @@ def analizar_servicios(servicios: list[dict]) -> list[dict]:
         enriquecido["motivo"] = motivo
         enriquecido["conocido"] = conocido
         enriquecido["descripcion"] = descripcion
+        enriquecido["recomendacion"] = generar_recomendacion(nivel, conocido)
         analizados.append(enriquecido)
 
     return analizados
