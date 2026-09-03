@@ -1,3 +1,19 @@
+PROCESOS_CONOCIDOS = {
+    "ControlCe": "AirPlay Receiver / Control Center (macOS)",
+    "rapportd": "Continuity / Handoff (macOS)",
+}
+
+
+def identificar_proceso(proceso: str) -> tuple[bool, str]:
+    """Identifica si el proceso está en la base de procesos conocidos."""
+    descripcion = PROCESOS_CONOCIDOS.get(proceso)
+
+    if descripcion:
+        return True, descripcion
+
+    return False, "Proceso no identificado"
+
+
 def clasificar_exposicion(direccion: str) -> tuple[str, str]:
     """Clasifica el nivel de exposición según la dirección de escucha."""
     if direccion in ("127.0.0.1", "::1"):
@@ -18,7 +34,7 @@ def clasificar_exposicion(direccion: str) -> tuple[str, str]:
 
 
 def analizar_servicios(servicios: list[dict]) -> list[dict]:
-    """Enriquece cada servicio con su nivel de exposición y motivo."""
+    """Enriquece cada servicio con exposición e identificación."""
     analizados = []
 
     for servicio in servicios:
@@ -27,9 +43,12 @@ def analizar_servicios(servicios: list[dict]) -> list[dict]:
             continue
 
         nivel, motivo = clasificar_exposicion(servicio["direccion"])
+        conocido, descripcion = identificar_proceso(servicio["proceso"])
         enriquecido = servicio.copy()
         enriquecido["nivel_exposicion"] = nivel
         enriquecido["motivo"] = motivo
+        enriquecido["conocido"] = conocido
+        enriquecido["descripcion"] = descripcion
         analizados.append(enriquecido)
 
     return analizados

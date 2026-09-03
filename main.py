@@ -71,6 +71,8 @@ def mostrar_info_red():
             f"  {servicio['proceso']} :{servicio['puerto']} "
             f"-> {servicio['nivel_exposicion']}"
         )
+        print(f"    Descripción: {servicio['descripcion']}")
+        print(f"    Conocido: {'Sí' if servicio['conocido'] else 'No'}")
         print(f"    {servicio['motivo']}")
 
     print(
