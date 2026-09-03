@@ -107,7 +107,7 @@ def obtener_servicios_locales() -> list[dict]:
             if len(partes) < 9:
                 continue
 
-            proceso = partes[0]
+            proceso = partes[0].replace(r"\x20", " ")
             pid = partes[1]
             direccion_puerto = partes[8]
             if ":" not in direccion_puerto:
