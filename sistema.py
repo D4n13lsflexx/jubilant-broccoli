@@ -88,36 +88,49 @@ def obtener_dns() -> list[str]:
 
 
 def obtener_servicios_locales() -> list[dict]:
-    """Devuelve los servicios que escuchan conexiones localmente."""
+    """Devuelve los servicios en escucha usando lsof."""
     servicios = []
+    vistos = set()
+
     try:
-        conexiones = psutil.net_connections(kind="inet")
-    except psutil.AccessDenied:
-        return servicios
-
-    for conexion in conexiones:
-        if conexion.status != "LISTEN" or not conexion.laddr:
-            continue
-
-        nombre_proceso = "Desconocido"
-        if conexion.pid:
-            try:
-                nombre_proceso = psutil.Process(conexion.pid).name()
-            except psutil.NoSuchProcess:
-                nombre_proceso = "Sin acceso"
-            except psutil.AccessDenied:
-                nombre_proceso = "Sin acceso"
-
-        servicios.append(
-            {
-                "puerto": conexion.laddr.port,
-                "direccion": conexion.laddr.ip,
-                "proceso": nombre_proceso,
-                "pid": conexion.pid,
-            }
+        resultado = subprocess.run(
+            ["lsof", "-i", "-P", "-n"],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
+        for linea in resultado.stdout.splitlines()[1:]:
+            if "LISTEN" not in linea:
+                continue
 
-    return sorted(servicios, key=lambda servicio: servicio["puerto"])
+            partes = linea.split()
+            if len(partes) < 9:
+                continue
+
+            proceso = partes[0]
+            pid = partes[1]
+            direccion_puerto = partes[8]
+            if ":" not in direccion_puerto:
+                continue
+
+            direccion, puerto = direccion_puerto.rsplit(":", 1)
+            clave = (proceso, puerto)
+            if clave in vistos:
+                continue
+            vistos.add(clave)
+
+            servicios.append(
+                {
+                    "proceso": proceso,
+                    "pid": pid,
+                    "direccion": direccion,
+                    "puerto": puerto,
+                }
+            )
+    except (subprocess.SubprocessError, OSError) as exc:
+        servicios.append({"error": str(exc)})
+
+    return servicios
 
 
 def recopilar_info_basica() -> dict:

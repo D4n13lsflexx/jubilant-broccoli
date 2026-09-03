@@ -49,10 +49,13 @@ def mostrar_info_red():
     print("\nServicios locales (escuchando):")
     if info["servicios"]:
         for servicio in info["servicios"]:
-            print(
-                f"  Puerto {servicio['puerto']} ({servicio['direccion']}) "
-                f"-> {servicio['proceso']} (PID {servicio['pid']})"
-            )
+            if "error" in servicio:
+                print(f"  Error: {servicio['error']}")
+            else:
+                print(
+                    f"  {servicio['proceso']} (PID {servicio['pid']}) "
+                    f"-> {servicio['direccion']}:{servicio['puerto']}"
+                )
     else:
         print("  Ninguno detectado o sin permisos suficientes.")
 
