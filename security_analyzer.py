@@ -1,6 +1,8 @@
 PROCESOS_CONOCIDOS = {
     "ControlCe": "AirPlay Receiver / Control Center (macOS)",
     "rapportd": "Continuity / Handoff (macOS)",
+    "Code": "Visual Studio Code (proceso auxiliar)",
+    "Python": "Intérprete Python (proceso local)",
 }
 
 MATRIZ_RIESGO = {
@@ -14,9 +16,10 @@ MATRIZ_RIESGO = {
 
 
 def identificar_proceso(nombre_proceso: str) -> tuple[str, bool]:
-    """Devuelve (descripción, conocido) para un nombre de proceso."""
-    if nombre_proceso in PROCESOS_CONOCIDOS:
-        return PROCESOS_CONOCIDOS[nombre_proceso], True
+    """Devuelve (descripción, conocido), tolerando nombres truncados."""
+    for clave, descripcion in PROCESOS_CONOCIDOS.items():
+        if nombre_proceso.startswith(clave):
+            return descripcion, True
     return "Proceso no identificado", False
 
 

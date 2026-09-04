@@ -48,6 +48,14 @@ def obtener_mac(ip: str) -> str:
     return "Desconocida"
 
 
+def normalizar_mac(mac: str) -> str:
+    """Convierte una MAC a formato estándar con ceros y mayúsculas."""
+    if mac == "Desconocida":
+        return mac
+    octetos = mac.split(":")
+    return ":".join(octeto.zfill(2).upper() for octeto in octetos)
+
+
 def identificar_fabricante(mac: str) -> str:
     """Devuelve el fabricante de una MAC según la base local."""
     if mac == "Desconocida":
@@ -69,6 +77,7 @@ def escanear_red(ip_local: str) -> list[dict]:
 
     with ThreadPoolExecutor(max_workers=10) as executor:
         macs = list(executor.map(obtener_mac, ips_vivas))
+    macs = [normalizar_mac(mac) for mac in macs]
 
     dispositivos = []
     for ip, mac in zip(ips_vivas, macs):

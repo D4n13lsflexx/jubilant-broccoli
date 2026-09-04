@@ -44,15 +44,19 @@ def generar_reporte(
 
         archivo.write("\n--- Hallazgos de Seguridad ---\n")
         if hallazgos:
+            conteo_exposicion = Counter(hallazgo["exposicion"] for hallazgo in hallazgos)
             conteo_riesgo = Counter(hallazgo["riesgo"] for hallazgo in hallazgos)
-            archivo.write(
-                f"Total: {len(hallazgos)} servicio(s) - "
-                + ", ".join(
-                    f"{cantidad} {riesgo}"
-                    for riesgo, cantidad in conteo_riesgo.items()
-                )
-                + "\n\n"
-            )
+
+            archivo.write(f"Total de servicios: {len(hallazgos)}\n\n")
+            archivo.write("EXPOSICIÓN:\n")
+            for nivel in ["BAJA", "REVISAR", "ALTA EXPOSICIÓN"]:
+                archivo.write(f"  {nivel}: {conteo_exposicion.get(nivel, 0)}\n")
+
+            archivo.write("\nRIESGO:\n")
+            for nivel in ["BAJO", "REVISAR", "ALTA PRIORIDAD"]:
+                archivo.write(f"  {nivel}: {conteo_riesgo.get(nivel, 0)}\n")
+
+            archivo.write("\nDetalle:\n")
             for hallazgo in hallazgos:
                 archivo.write(
                     f"[{hallazgo['riesgo']}] "
