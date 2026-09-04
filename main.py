@@ -103,7 +103,10 @@ def main():
                 dispositivos = escanear_red(info_sistema["ip_local"])
                 print(f"\nDispositivos activos encontrados: {len(dispositivos)}")
                 for dispositivo in dispositivos:
-                    print(f"  {dispositivo['ip']} -> {dispositivo['mac']}")
+                    print(
+                        f"  {dispositivo['ip']} -> {dispositivo['mac']} "
+                        f"({dispositivo['fabricante']})"
+                    )
             except (OSError, ValueError) as exc:
                 print(f"No se pudo escanear la red: {exc}")
         elif opcion == "5":

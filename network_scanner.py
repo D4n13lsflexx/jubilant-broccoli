@@ -3,6 +3,11 @@ import re
 import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
+from mac_vendor_lookup import MacLookup
+
+
+mac_lookup = MacLookup()
+
 
 def obtener_rango_red(ip_local: str, prefijo: int = 24) -> list[str]:
     """Calcula las IPs utilizables de la red local."""
@@ -43,8 +48,18 @@ def obtener_mac(ip: str) -> str:
     return "Desconocida"
 
 
+def identificar_fabricante(mac: str) -> str:
+    """Devuelve el fabricante de una MAC según la base local."""
+    if mac == "Desconocida":
+        return "Desconocido"
+    try:
+        return mac_lookup.lookup(mac)
+    except Exception:
+        return "Desconocido"
+
+
 def escanear_red(ip_local: str) -> list[dict]:
-    """Escanea la red local y consulta la MAC de cada IP activa."""
+    """Escanea la red y obtiene MAC y fabricante de cada IP activa."""
     rango = obtener_rango_red(ip_local)
 
     with ThreadPoolExecutor(max_workers=50) as executor:
@@ -55,4 +70,14 @@ def escanear_red(ip_local: str) -> list[dict]:
     with ThreadPoolExecutor(max_workers=10) as executor:
         macs = list(executor.map(obtener_mac, ips_vivas))
 
-    return [{"ip": ip, "mac": mac} for ip, mac in zip(ips_vivas, macs)]
+    dispositivos = []
+    for ip, mac in zip(ips_vivas, macs):
+        dispositivos.append(
+            {
+                "ip": ip,
+                "mac": mac,
+                "fabricante": identificar_fabricante(mac),
+            }
+        )
+
+    return dispositivos
