@@ -3,6 +3,7 @@ from pathlib import Path
 
 from analizador import detectar_nivel, leer_log
 from network_scanner import escanear_red
+from report_generator import generar_reporte
 from security_analyzer import generar_hallazgos
 from sistema import recopilar_info_basica
 
@@ -77,6 +78,10 @@ def main():
     print("  SENTINEL - Analizador de Logs")
     print("=" * 40)
 
+    ultima_ruta = None
+    ultimas_lineas = None
+    ultimos_dispositivos = []
+
     while True:
         mostrar_menu()
         opcion = input("\nSelecciona una opción: ").strip()
@@ -87,6 +92,7 @@ def main():
                 lineas = leer_log(ruta)
                 if lineas is not None:
                     mostrar_analisis(ruta, lineas)
+                    ultima_ruta, ultimas_lineas = ruta, lineas
             except (OSError, ValueError) as exc:
                 print(f"No se pudo analizar el archivo: {exc}")
         elif opcion == "2":
@@ -95,14 +101,26 @@ def main():
             except OSError as exc:
                 print(f"No se pudo obtener la información del sistema: {exc}")
         elif opcion == "3":
-            print("Generando reporte...")
+            try:
+                info_sistema = recopilar_info_basica()
+                hallazgos = generar_hallazgos(info_sistema["servicios"])
+                nombre = generar_reporte(
+                    ultima_ruta,
+                    ultimas_lineas,
+                    info_sistema,
+                    hallazgos,
+                    ultimos_dispositivos,
+                )
+                print(f"\nReporte guardado en: {nombre}")
+            except (OSError, ValueError, KeyError) as exc:
+                print(f"No se pudo generar el reporte: {exc}")
         elif opcion == "4":
             print("\nEscaneando red local (puede tardar unos segundos)...")
             try:
                 info_sistema = recopilar_info_basica()
-                dispositivos = escanear_red(info_sistema["ip_local"])
-                print(f"\nDispositivos activos encontrados: {len(dispositivos)}")
-                for dispositivo in dispositivos:
+                ultimos_dispositivos = escanear_red(info_sistema["ip_local"])
+                print(f"\nDispositivos activos encontrados: {len(ultimos_dispositivos)}")
+                for dispositivo in ultimos_dispositivos:
                     print(
                         f"  {dispositivo['ip']} -> {dispositivo['mac']} "
                         f"({dispositivo['fabricante']})"
