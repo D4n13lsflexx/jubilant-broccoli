@@ -8,7 +8,7 @@ def generar_reporte(
     ruta_log, lineas, info_sistema, hallazgos, dispositivos
 ) -> str:
     """Genera un reporte de auditoría en formato TXT."""
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")
     nombre_archivo = f"reporte_{timestamp}.txt"
 
     with open(nombre_archivo, "w", encoding="utf-8") as archivo:
