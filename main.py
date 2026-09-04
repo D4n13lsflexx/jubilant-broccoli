@@ -11,6 +11,7 @@ from historial import (
     cargar_auditoria,
     comparar_auditorias,
     guardar_auditoria,
+    listar_auditorias,
     obtener_ultima_auditoria,
 )
 
@@ -21,7 +22,8 @@ def mostrar_menu():
     print("2. Analizar red")
     print("3. Generar reporte")
     print("4. Escanear LAN")
-    print("5. Salir")
+    print("5. Ver historial")
+    print("6. Salir")
 
 
 def mostrar_analisis(ruta, lineas):
@@ -207,6 +209,33 @@ def main():
             except (OSError, ValueError) as exc:
                 print(f"No se pudo escanear la red: {exc}")
         elif opcion == "5":
+            auditorias = listar_auditorias()
+            if not auditorias:
+                print("\nNo hay auditorías guardadas todavía.")
+            else:
+                print(f"\nAuditorías guardadas ({len(auditorias)}):")
+                for indice, ruta in enumerate(auditorias, 1):
+                    datos = cargar_auditoria(ruta)
+                    resumen = datos.get("resumen", {})
+                    print(
+                        f"  {indice}. {datos.get('fecha', '?')} - "
+                        f"{resumen.get('total_servicios', '?')} servicios, "
+                        f"{resumen.get('total_dispositivos', '?')} dispositivos"
+                    )
+
+                seleccion = input(
+                    "\nVer detalle de cuál (número, o Enter para omitir): "
+                ).strip()
+                if seleccion.isdigit() and 1 <= int(seleccion) <= len(auditorias):
+                    datos = cargar_auditoria(auditorias[int(seleccion) - 1])
+                    print(f"\n--- Auditoría del {datos['fecha']} ---")
+                    sistema = datos.get("sistema", {})
+                    print(
+                        f"Sistema: {sistema.get('sistema', '?')} "
+                        f"{sistema.get('version', '?')}"
+                    )
+                    print(f"Resumen: {datos.get('resumen', {})}")
+        elif opcion == "6":
             break
         else:
             print("Opción inválida")

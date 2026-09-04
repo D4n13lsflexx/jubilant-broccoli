@@ -25,6 +25,15 @@ def obtener_ultima_auditoria() -> Optional[str]:
     return str(auditorias[-1]) if auditorias else None
 
 
+def listar_auditorias() -> list[Path]:
+    """Devuelve las auditorías guardadas, de más reciente a más antigua."""
+    if not DIRECTORIO_HISTORIAL.exists():
+        return []
+    return sorted(
+        DIRECTORIO_HISTORIAL.glob("auditoria_*.json"), reverse=True
+    )
+
+
 def cargar_auditoria(ruta: str) -> dict:
     """Carga una auditoría guardada en JSON."""
     with Path(ruta).open("r", encoding="utf-8") as archivo:
