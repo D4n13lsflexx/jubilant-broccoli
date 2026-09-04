@@ -4,9 +4,6 @@ import subprocess
 from concurrent.futures import ThreadPoolExecutor
 
 
-PATRON_ARP = re.compile(r"\(([\d.]+)\) at ([0-9a-fA-F:]{17})")
-
-
 def obtener_rango_red(ip_local: str, prefijo: int = 24) -> list[str]:
     """Calcula las IPs utilizables de la red local."""
     red = ipaddress.ip_network(f"{ip_local}/{prefijo}", strict=False)
@@ -26,37 +23,36 @@ def ping_ip(ip: str) -> bool:
         return False
 
 
-def obtener_tabla_arp() -> dict:
-    """Devuelve IP y MAC de las entradas completas de arp -a."""
-    tabla = {}
+def obtener_mac(ip: str) -> str:
+    """Consulta la MAC de una IP usando arp -n."""
     try:
         resultado = subprocess.run(
-            ["arp", "-a"],
+            ["arp", "-n", ip],
             capture_output=True,
             text=True,
-            timeout=5,
+            timeout=3,
         )
-        for linea in resultado.stdout.splitlines():
-            coincidencia = PATRON_ARP.search(linea)
-            if coincidencia:
-                ip, mac = coincidencia.groups()
-                tabla[ip] = mac
+        coincidencia = re.search(
+            r"([0-9a-fA-F]{1,2}(?::[0-9a-fA-F]{1,2}){5})",
+            resultado.stdout,
+        )
+        if coincidencia:
+            return coincidencia.group(1)
     except (subprocess.SubprocessError, OSError):
         pass
-    return tabla
+    return "Desconocida"
 
 
 def escanear_red(ip_local: str) -> list[dict]:
-    """Escanea la red local con pings paralelos y cruza la tabla ARP."""
+    """Escanea la red local y consulta la MAC de cada IP activa."""
     rango = obtener_rango_red(ip_local)
 
     with ThreadPoolExecutor(max_workers=50) as executor:
-        resultados = executor.map(ping_ip, rango)
+        resultados_ping = list(executor.map(ping_ip, rango))
 
-    ips_vivas = [ip for ip, vivo in zip(rango, resultados) if vivo]
-    tabla_arp = obtener_tabla_arp()
+    ips_vivas = [ip for ip, vivo in zip(rango, resultados_ping) if vivo]
 
-    return [
-        {"ip": ip, "mac": tabla_arp.get(ip, "Desconocida")}
-        for ip in ips_vivas
-    ]
+    with ThreadPoolExecutor(max_workers=10) as executor:
+        macs = list(executor.map(obtener_mac, ips_vivas))
+
+    return [{"ip": ip, "mac": mac} for ip, mac in zip(ips_vivas, macs)]
